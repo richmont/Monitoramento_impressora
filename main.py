@@ -29,7 +29,7 @@ def verificar_todas(SysTrayIcon):
             for bandeja in resultado:
                 titulo = str(i['nome']) + " sem papel"
                 texto = "Verificar a bandeja " + str(bandeja)
-                mostrar_notificacao(titulo, texto, 15)
+                mostrar_notificacao(titulo, texto, 3)
 
 
 def abrir_json(configuracao_json):
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             for bandeja in resultado:
                 titulo = str(i['nome']) + " sem papel"
                 texto = "Verificar a bandeja " + str(bandeja)
-                mostrar_notificacao(titulo, texto, 15)
+                mostrar_notificacao(titulo, texto, 3)
 
     menu_options = (('Verificar agora', None, verificar_todas), ('Impressoras Monitoradas', None, tuple(lista_tuplas)))
     sysTrayIcon = SysTrayIcon("printer.ico", hover_text, menu_options, on_quit=encerra, default_menu_index=1)
