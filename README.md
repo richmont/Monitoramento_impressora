@@ -1,31 +1,27 @@
 # Status_impressora_Lexmark
 
 Script que utiliza da página de status de impressoras Lexmark MS811 para gerar notificações na área de trabalho.  
+## Funcionamento  
+O software lê a página de status da impressora através do IP informado na configuração, usando beautifulsoup4, colhe a informação das bandejas, quando uma bandeja está com papel, mostra "OK", com pouco ou nenhum papel, mostra "Sem papel" ou "Baixo". Tendo essa informação, varre as páginas de status de múltiplas impressoras e, quando detecta que uma delas está sem o status OK, mostra uma notificação Toast (integrada ao sistema) do Windows 10. Conta com um ícone de notificação (tray icon) que permite exibir quais impressoras estão monitoradas e um botão para escaneá-las na hora.  
+
+## Motivação
+Antecipar o problema da falta de papel nas impressoras da empresa que trabalho. Recebendo avisos no computador antes que seja preciso alguém enviando impressões ligue ao setor de informática avise que é necessário reabastecer. Além da motivação prática, gostaria de fornecer solução pra um problema diferente dos programas que fiz até então.
+
 ## Requisitos
 * Windows 10
 * Python 3.8>
 ## Requirements.txt
 <code>
 beautifulsoup4==4.8.2  
-
 certifi==2019.11.28
-
 chardet==3.0.4
-
 idna==2.8
-
 infi.systray==0.1.12
-
 pypiwin32==223
-
 pywin32==227
-
 requests==2.22.0
-
 soupsieve==1.9.5
-
 urllib3==1.25.8
-
 win10toast-persist==0.10.1
 </code>
 
