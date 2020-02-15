@@ -44,13 +44,23 @@ def filtragem(soup):
     except AttributeError:
         raise AttributeError("Verifique o objeto beautifulsoup recebido pela função")
 
-def executar_verificacao(ip):
+
+def executar_scan(ip):
+    """
+    cria uma lista com o número da bandeja que não está OK
+    caso a lista esteja vazia, ambas estão ok
+    """
     soup = scraper_pagina(ip)
     bandeja_1, bandeja_2 = filtragem(soup)
-    
+    resultado = []
+    if bandeja_1 != "OK":
+        resultado.append(1)
+    if bandeja_2 != "OK":
+        resultado.append(2)
+    return resultado
 
 
-executar_verificacao('10.127.244.22')
+# executar_verificacao('10.127.244.22')
 
 """
 print("Bandeja 1: ", bandeja_1)

@@ -1,6 +1,7 @@
 
 import json
-import logging
+from scraper import executar_scan
+from notificacao import mostrar_notificacao
 from infi.systray import SysTrayIcon
 configuracao_json = 'config.json'
 hover_text = "Status Impressoras"
@@ -10,12 +11,25 @@ def hello(sysTrayIcon):
     print("Hello World.")
 
 
-# tupla base onde serão acrescentadas as impressoras detectadas
-
-
-
 def encerra(sysTrayIcon):
     print('Encerrando programa')
+
+
+def verificar_todas(SysTrayIcon):
+    for i in impressoras:
+        # exibe em tela os nomes das impressoras detectadas
+        print(i['nome'])
+        tupla = (i['nome'], None, hello)
+        lista_tuplas.append(tupla)
+        resultado = executar_scan(i['ip'])
+        if len(resultado) == 0:
+            # tudo ok, impressora com papel
+            pass
+        else:
+            for bandeja in resultado:
+                titulo = str(i['nome']) + " sem papel"
+                texto = "Verificar a bandeja " + str(bandeja)
+                mostrar_notificacao(titulo, texto, 15)
 
 
 def abrir_json(configuracao_json):
@@ -46,11 +60,21 @@ if __name__ == "__main__":
     """
     lista_tuplas = []
     for i in impressoras:
+        # exibe em tela os nomes das impressoras detectadas
         print(i['nome'])
         tupla = (i['nome'], None, hello)
         lista_tuplas.append(tupla)
-    menu_options = (('Verificar agora', None, hello), ('Impressoras', None, tuple(lista_tuplas)))
+        resultado = executar_scan(i['ip'])
+        if len(resultado) == 0:
+            # tudo ok, impressora com papel
+            pass
+        else:
+            for bandeja in resultado:
+                titulo = str(i['nome']) + " sem papel"
+                texto = "Verificar a bandeja " + str(bandeja)
+                mostrar_notificacao(titulo, texto, 15)
 
-    
+    menu_options = (('Verificar agora', None, verificar_todas), ('Impressoras Monitoradas', None, tuple(lista_tuplas)))
     sysTrayIcon = SysTrayIcon("printer.ico", hover_text, menu_options, on_quit=encerra, default_menu_index=1)
+    
     sysTrayIcon.start()
