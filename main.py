@@ -21,7 +21,7 @@ def verificar_todas(SysTrayIcon):
         print(i['nome'])
         tupla = (i['nome'], None, hello)
         lista_tuplas.append(tupla)
-        resultado = executar_scan(i['ip'])
+        resultado = executar_scan(i['ip'], i['nome'])
         if len(resultado) == 0:
             # tudo ok, impressora com papel
             pass
@@ -58,23 +58,26 @@ if __name__ == "__main__":
     que depois será convertido em uma tupla
     esta tupla é exibida na forma de submenu Impressoras
     """
+    
     lista_tuplas = []
     for i in impressoras:
         # exibe em tela os nomes das impressoras detectadas
         print(i['nome'])
         tupla = (i['nome'], None, hello)
         lista_tuplas.append(tupla)
-        resultado = executar_scan(i['ip'])
-        if len(resultado) == 0:
+        resultado = executar_scan(i['ip'], i['nome'])
+        try:
+            if len(resultado) == 0:
             # tudo ok, impressora com papel
-            pass
-        else:
-            for bandeja in resultado:
-                titulo = str(i['nome']) + " sem papel"
-                texto = "Verificar a bandeja " + str(bandeja)
-                mostrar_notificacao(titulo, texto, 3)
-
+                pass
+            else:
+                for bandeja in resultado:
+                    titulo = str(i['nome']) + " sem papel"
+                    texto = "Verificar a bandeja " + str(bandeja)
+                    mostrar_notificacao(titulo, texto, 3)
+        except TypeError:
+            continue
     menu_options = (('Verificar agora', None, verificar_todas), ('Impressoras Monitoradas', None, tuple(lista_tuplas)))
-    sysTrayIcon = SysTrayIcon("printer.ico", hover_text, menu_options, on_quit=encerra, default_menu_index=1)
-    
+    sysTrayIcon = SysTrayIcon("printer.ico", hover_text, menu_options, on_quit=encerra, default_menu_index=1)  
     sysTrayIcon.start()
+        
