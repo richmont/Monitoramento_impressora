@@ -22,7 +22,17 @@ function Get-Contador-Paginas($ip) {
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/config/reports/devicestatistics.html"
     $contagem = $requisicao.allelements | Where tagname -eq "p" | Select -Skip 15 -First 1 -ExpandProperty outerText
     Return $contagem.TrimEnd(' ')
-    
+}
+
+function Get-Toner($ip){
+    <#
+    Baixa o conteúdo da página de estatísticas da impressora
+    Exibe todas as tags <b> e conta até a 3ª
+    O conteúdo dessa tag contém o nível do toner
+    Corta o texto entre "~" e "%", pra sobrar apenas o numeral
+    #>
+    $toner = $requisicao.allelements | Where tagname -eq "B" | Select -Skip 3 -First 1 -ExpandProperty outerText
+    Return $toner.Split("~")[1].TrimEnd("%")
 }
 
 function Requisicao{
