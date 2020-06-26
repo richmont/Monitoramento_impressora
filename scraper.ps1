@@ -29,15 +29,17 @@ function Get-Toner($ip){
     Baixa o conteúdo da página de estatísticas da impressora
     Exibe todas as tags <b> e conta até a 3ª
     O conteúdo dessa tag contém o nível do toner
-    Corta o texto entre "~" e "%", pra sobrar apenas o numeral
+    Trim corta todos os caracteres extras, deixando apenas os numerais da porcentagem
+    Retorna um número de 1 a 100
     #>
     $toner = $requisicao.allelements | Where tagname -eq "B" | Select -Skip 3 -First 1 -ExpandProperty outerText
-    Return $toner.Split("~")[1].TrimEnd("%")
+    Return $toner.Trim("Cartucho Preto ~%")
 }
 
 function Requisicao{
     param
-    (
+    (   
+        $toner,
         $api_url,
         $num_pagina,
         $hostname,
@@ -50,7 +52,7 @@ function Requisicao{
     Envia através de requisição GET e retorna o resultado da requisição
     #>
     #write-host $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora"
-    $resposta = Invoke-WebRequest -Uri $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora"
+    $resposta = Invoke-WebRequest -Uri $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner"
     Return $resposta
 
 }
@@ -63,11 +65,20 @@ $hostname = $env:computername
 foreach($x in $configuracao.impressoras){
     # parâmetros individuais da impressora são executados dentro do foreach
     # nome e ip
-    $num_pagina = Get-Contador-Paginas($x.ip)
+    try{
+        $num_pagina = Get-Contador-Paginas($x.ip)
+    } catch{
+        Write-Host "Erro ao coletar número de página para a impressora" $x.nome
+    }
+    try{
+        $toner = Get-Toner($x.ip)
+    } catch{
+        Write-Host "Erro ao coletar o medidor de tonner"
+    }
     # envio da requisição dentro de um try pra capturar o erro do servidor e retornar mensagem de erro
     # erro também será tratado no servidor pra notificar usuários
     try {
-        Requisicao -num_pagina $num_pagina -hostname $hostname -nome_impressora $x.nome -api_url $api_url
+        Requisicao -num_pagina $num_pagina -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner
     }
     catch {
         Write-Host "Erro ao enviar requisição para a impressora" $x.nome
