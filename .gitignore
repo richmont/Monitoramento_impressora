@@ -1,6 +1,0 @@
-# arquivos de cache do python
-*pycache*
-# workspace do Code
-*.code-workspace
-# json em geral
-*.json
