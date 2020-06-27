@@ -37,7 +37,7 @@ function Get-Toner($ip){
     Return $toner.Trim("Cartucho Preto ~%")
 }
 
-function Get-Kit-do-Rolo($ip){
+function Get-Kit-Rolo($ip){
     <#
     Baixa o conteúdo da página de estatísticas da impressora
     Exibe todas as tags <TD> e conta até a 50ª
@@ -46,8 +46,8 @@ function Get-Kit-do-Rolo($ip){
     Retorna um número de 1 a 100
     #>
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
-    $kit_do_rolo = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 50 -First 1 -ExpandProperty outerText
-    Return $kit_do_rolo.Trim("%")
+    $kit_rolo = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 50 -First 1 -ExpandProperty outerText
+    Return $kit_rolo.Trim("%")
 }
 
 function Get-Kit-Manutencao($ip){
@@ -59,8 +59,8 @@ function Get-Kit-Manutencao($ip){
     Retorna um número de 1 a 100
     #>
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
-    $kit_de_manutencao = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 48 -First 1 -ExpandProperty outerText
-    Return $kit_de_manutencao.Trim("%")
+    $kit_manutencao = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 48 -First 1 -ExpandProperty outerText
+    Return $kit_manutencao.Trim("%")
 }
 
 function Get-Unidade-Imagem($ip){
@@ -72,8 +72,8 @@ function Get-Unidade-Imagem($ip){
     Retorna um número de 1 a 100
     #>
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
-    $unidade_de_imagem = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 52 -First 1 -ExpandProperty outerText
-    Return $unidade_de_imagem.Trim("%")
+    $unidade_imagem = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 52 -First 1 -ExpandProperty outerText
+    Return $unidade_imagem.Trim("%")
 }
 
 function Requisicao{
@@ -81,12 +81,12 @@ function Requisicao{
     (   
         $toner,
         $api_url,
-        $num_pagina,
+        $total_impressoes,
         $hostname,
         $nome_impressora,
-        $kit_de_manutencao,
-        $unidade_de_imagem,
-        $kit_do_rolo
+        $kit_manutencao,
+        $unidade_imagem,
+        $kit_rolo
        
     )
     <#
@@ -94,8 +94,8 @@ function Requisicao{
     O número total de impressões e o nome da impressora
     Envia através de requisição GET e retorna o resultado da requisição
     #>
-    #write-host $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_de_manutencao=$kit_de_manutencao&unidade_de_imagem=$unidade_de_imagem&kit_do_rolo=$kit_do_rolo"
-    $resposta = Invoke-WebRequest -Uri $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_de_manutencao=$kit_de_manutencao&unidade_de_imagem=$unidade_de_imagem&kit_do_rolo=$kit_do_rolo"
+    #write-host $api_url"?total_impressoes=$total_impressoes&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_manutencao=$kit_manutencao&unidade_imagem=$unidade_imagem&kit_rolo=$kit_rolo"
+    $resposta = Invoke-WebRequest $api_url"?total_impressoes=$total_impressoes&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_manutencao=$kit_manutencao&unidade_imagem=$unidade_imagem&kit_rolo=$kit_rolo"
     Return $resposta
 
 }
@@ -109,7 +109,7 @@ foreach($x in $configuracao.impressoras){
     # parâmetros individuais da impressora são executados dentro do foreach
     # nome e ip
     try{
-        $num_pagina = Get-Contador-Paginas($x.ip)
+        $total_impressoes = Get-Contador-Paginas($x.ip)
     } catch{
         Write-Host "Erro ao coletar número de página para a impressora" $x.nome
     }
@@ -121,21 +121,21 @@ foreach($x in $configuracao.impressoras){
     }
 
     try{
-        $kit_de_manutencao = Get-Kit-Manutencao($x.ip)
+        $kit_manutencao = Get-Kit-Manutencao($x.ip)
         
     } catch{
         Write-Host "Erro ao coletar o medidor do kit de manutenção"
     }
 
     try{
-        $kit_do_rolo = Get-Kit-do-Rolo($x.ip)
+        $kit_rolo = Get-Kit-Rolo($x.ip)
         
     } catch{
         Write-Host "Erro ao coletar o medidor de kit do rolo"
     }
 
     try{
-        $unidade_de_imagem = Get-Unidade-Imagem($x.ip)
+        $unidade_imagem = Get-Unidade-Imagem($x.ip)
         
     } catch{
         Write-Host "Erro ao coletar o medidor da Unidade de Imagem"
@@ -145,11 +145,10 @@ foreach($x in $configuracao.impressoras){
     # erro também será tratado no servidor pra notificar usuários
     try {
         
-        Requisicao -num_pagina $num_pagina -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner -unidade_de_imagem $unidade_de_imagem -kit_de_manutencao $kit_de_manutencao -kit_do_rolo $kit_do_rolo
+        Requisicao -total_impressoes $total_impressoes -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner -unidade_imagem $unidade_imagem -kit_manutencao $kit_manutencao -kit_rolo $kit_rolo
     }
     catch {
         Write-Host "Erro ao enviar requisição para a impressora" $x.nome
     }
-    
 }
 
