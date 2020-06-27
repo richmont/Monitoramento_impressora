@@ -32,8 +32,48 @@ function Get-Toner($ip){
     Trim corta todos os caracteres extras, deixando apenas os numerais da porcentagem
     Retorna um número de 1 a 100
     #>
+    $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
     $toner = $requisicao.allelements | Where tagname -eq "B" | Select -Skip 3 -First 1 -ExpandProperty outerText
     Return $toner.Trim("Cartucho Preto ~%")
+}
+
+function Get-Kit-do-Rolo($ip){
+    <#
+    Baixa o conteúdo da página de estatísticas da impressora
+    Exibe todas as tags <TD> e conta até a 50ª
+    O conteúdo dessa tag contém o nível do kit do rolo (não me pergunte o que é)
+    Trim corta todos os caracteres extras, deixando apenas os numerais da porcentagem
+    Retorna um número de 1 a 100
+    #>
+    $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
+    $kit_do_rolo = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 50 -First 1 -ExpandProperty outerText
+    Return $kit_do_rolo.Trim("%")
+}
+
+function Get-Kit-Manutencao($ip){
+    <#
+    Baixa o conteúdo da página de estatísticas da impressora
+    Exibe todas as tags <TD> e conta até a 48ª
+    O conteúdo dessa tag contém o nível do kit de manutenção
+    Trim corta todos os caracteres extras, deixando apenas os numerais da porcentagem
+    Retorna um número de 1 a 100
+    #>
+    $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
+    $kit_de_manutencao = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 48 -First 1 -ExpandProperty outerText
+    Return $kit_de_manutencao.Trim("%")
+}
+
+function Get-Unidade-Imagem($ip){
+    <#
+    Baixa o conteúdo da página de estatísticas da impressora
+    Exibe todas as tags <TD> e conta até a 52ª
+    O conteúdo dessa tag contém o nível da unidade de imagem
+    Trim corta todos os caracteres extras, deixando apenas os numerais da porcentagem
+    Retorna um número de 1 a 100
+    #>
+    $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/PrinterStatus.html"
+    $unidade_de_imagem = $requisicao.allelements | Where tagname -eq "TD" | Select -Skip 52 -First 1 -ExpandProperty outerText
+    Return $unidade_de_imagem.Trim("%")
 }
 
 function Requisicao{
@@ -43,7 +83,10 @@ function Requisicao{
         $api_url,
         $num_pagina,
         $hostname,
-        $nome_impressora
+        $nome_impressora,
+        $kit_de_manutencao,
+        $unidade_de_imagem,
+        $kit_do_rolo
        
     )
     <#
@@ -51,8 +94,8 @@ function Requisicao{
     O número total de impressões e o nome da impressora
     Envia através de requisição GET e retorna o resultado da requisição
     #>
-    #write-host $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora"
-    $resposta = Invoke-WebRequest -Uri $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner"
+    #write-host $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_de_manutencao=$kit_de_manutencao&unidade_de_imagem=$unidade_de_imagem&kit_do_rolo=$kit_do_rolo"
+    $resposta = Invoke-WebRequest -Uri $api_url"?num_pagina=$num_pagina&hostname=$hostname&nome_impressora=$nome_impressora&toner=$toner&kit_de_manutencao=$kit_de_manutencao&unidade_de_imagem=$unidade_de_imagem&kit_do_rolo=$kit_do_rolo"
     Return $resposta
 
 }
@@ -72,13 +115,37 @@ foreach($x in $configuracao.impressoras){
     }
     try{
         $toner = Get-Toner($x.ip)
+        
     } catch{
         Write-Host "Erro ao coletar o medidor de tonner"
     }
+
+    try{
+        $kit_de_manutencao = Get-Kit-Manutencao($x.ip)
+        
+    } catch{
+        Write-Host "Erro ao coletar o medidor do kit de manutenção"
+    }
+
+    try{
+        $kit_do_rolo = Get-Kit-do-Rolo($x.ip)
+        
+    } catch{
+        Write-Host "Erro ao coletar o medidor de kit do rolo"
+    }
+
+    try{
+        $unidade_de_imagem = Get-Unidade-Imagem($x.ip)
+        
+    } catch{
+        Write-Host "Erro ao coletar o medidor da Unidade de Imagem"
+    }
+
     # envio da requisição dentro de um try pra capturar o erro do servidor e retornar mensagem de erro
     # erro também será tratado no servidor pra notificar usuários
     try {
-        Requisicao -num_pagina $num_pagina -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner
+        
+        Requisicao -num_pagina $num_pagina -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner -unidade_de_imagem $unidade_de_imagem -kit_de_manutencao $kit_de_manutencao -kit_do_rolo $kit_do_rolo
     }
     catch {
         Write-Host "Erro ao enviar requisição para a impressora" $x.nome
