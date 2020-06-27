@@ -3,8 +3,13 @@
     "impressoras": [
         {"nome": "gerencia",
             "ip": "0.0.0.0"},
-            {"nome": "rh",
-            "ip": "0.0.0.0"}
+        {"nome": "rh",
+            "ip": "0.0.0.0"},    
             ],
-    "api_url": "localhost/monitoramento_impressora/api.php"
+    "api_url": "localhost/monitoramento_impressora/api.php",
+    "banco": {
+        "login": "login",
+        "senha": "senha",
+        "database": "database"}
+    }
 }
