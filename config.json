@@ -2,14 +2,13 @@
     "email": "seuemail@seuprovedor.com.br",
     "impressoras": [
         {"nome": "gerencia",
-            "ip": "0.0.0.0"},
-        {"nome": "rh",
-            "ip": "0.0.0.0"},    
+            "ip": "0.0.0.0"}
             ],
     "api_url": "localhost/monitoramento_impressora/api.php",
     "banco": {
         "login": "login",
         "senha": "senha",
-        "database": "database"}
+        "database": "database",
+        "endereco": "localhost"
     }
 }
