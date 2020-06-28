@@ -1,5 +1,7 @@
 {
     "email": "seuemail@seuprovedor.com.br",
+    "fuso_horario": "Fuso/Horario",
+    "envio_email": true,
     "impressoras": [
         {"nome": "gerencia",
             "ip": "0.0.0.0"}
