@@ -20,7 +20,7 @@ function Get-Contador-Paginas($ip) {
     Corta um caractere de espaço no fim do número de impressões, retorna
     #>
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/config/reports/devicestatistics.html"
-    $contagem = $requisicao.allelements | Where tagname -eq "p" | Select -Skip 15 -First 1 -ExpandProperty outerText
+    $contagem = $requisicao.allelements | Where tagname -eq "p" | Select -Skip 97 -First 1 -ExpandProperty outerText
     Return $contagem.TrimEnd(' ')
 }
 
