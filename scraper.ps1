@@ -2,7 +2,11 @@
 Script em Powershell que executa scraping na página de estatística de impressoras do modelo Lexmark MS811
 Envia requisição GET com valor do contador de páginas para uma API em PHP que grava em banco de dados
 #>
+Param(
+    $config_json
+)
 
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 function Get-Config-Json($arquivo){
     <#
     recebe as configurações do sistema através do config.json
@@ -13,15 +17,19 @@ function Get-Config-Json($arquivo){
 }
 
 function Get-Contador-Paginas($ip) {
-    <#
-    Baixa o conteúdo da página de estatísticas da impressora
-    Exibe todas as tags <p> e conta até a 16ª
-    O conteúdo dessa tag contém o total de impressões feitas pela impressora
-    Corta um caractere de espaço no fim do número de impressões, retorna
-    #>
     $requisicao = Invoke-WebRequest -Uri "$ip/cgi-bin/dynamic/printer/config/reports/devicestatistics.html"
-    $contagem = $requisicao.allelements | Where tagname -eq "p" | Select -Skip 97 -First 1 -ExpandProperty outerText
-    Return $contagem.TrimEnd(' ')
+    # seleciona todas as tags P
+    $tagP = $requisicao.AllElements | where tagname -eq "p"
+    <# mostra o conteúdo da tag, seleciona todas as linhas que tem o nome Total
+    define o contexto pra linha inicial (0) e linha final (1, a linha a seguir)
+    de todas as ocorrências de Total, pula as três primeiras  e exibe apenas uma, a quarta
+    laço foreach pra lista de dois membros, a linha selecionada (Total) e a linha a seguir, o numeral com a informação que queremos
+    guarda na variável $valor o atributo "PostContext", o valor da linha seguinte a selecionada por Total
+    Fonte: https://stackoverflow.com/questions/47518596/powershell-select-html-text #>
+    $tagp.innerText | Select-String 'Total' -Context 0,1 | Select -Skip 4 -First 1 | ForEach-Object {
+        $valor = $_.Context.PostContext
+        return $valor.TrimEnd(' ')
+    }
 }
 
 function Get-Toner($ip){
