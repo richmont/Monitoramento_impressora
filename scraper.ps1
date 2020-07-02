@@ -108,7 +108,7 @@ function Requisicao{
 
 }
 # Lê as configurações do arquivo
-$configuracao = Get-Config-Json("config.json")
+$configuracao = Get-Config-Json($config_json)
 $api_url = $configuracao.api_url
 # O nome de máquina do computador onde o script foi executado
 $hostname = $env:computername
@@ -154,6 +154,11 @@ foreach($x in $configuracao.impressoras){
     try {
         
         Requisicao -total_impressoes $total_impressoes -hostname $hostname -nome_impressora $x.nome -api_url $api_url -toner $toner -unidade_imagem $unidade_imagem -kit_manutencao $kit_manutencao -kit_rolo $kit_rolo
+        $total_impressoes = $null
+        $toner = $null
+        $unidade_imagem = $null
+        $kit_manutencao = $null
+        $kit_rolo = $null
     }
     catch {
         Write-Host "Erro ao enviar requisição para a impressora" $x.nome
